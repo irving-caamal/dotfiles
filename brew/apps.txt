@@ -1,0 +1,14 @@
+git
+zsh
+fzf
+tmux
+neovim
+yarn
+asdf
+gh
+zoxide
+delta
+tree
+mas
+watchman
+fd

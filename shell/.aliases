@@ -1,0 +1,9 @@
+# ~/.aliases
+# Docker, database, and project shortcuts
+alias d="docker"
+alias m="mysql -u root -p"
+alias pa="php artisan"
+alias vi="vim"
+alias y="yarn"
+alias yrw="yarn run watch"
+alias yrp="yarn run prod"
