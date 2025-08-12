@@ -1,9 +1,224 @@
-# ~/.aliases
-# Docker, database, and project shortcuts
-alias d="docker"
+# ~/.aliases - Shell aliases and shortcuts
+
+# Navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias ~='cd ~'
+alias -- -='cd -'
+
+# List files
+alias l='ls -lFh'     # size,show type,human readable
+alias la='ls -lAFh'   # long list,show almost all,show type,human readable
+alias lr='ls -tRFh'   # sorted by date,recursive,show type,human readable
+alias lt='ls -ltFh'   # long list,sorted by date,show type,human readable
+alias ll='ls -l'      # long list
+alias ldot='ls -ld .*'
+alias lS='ls -1FSsh'
+alias lart='ls -1Fcart'
+alias lrt='ls -1Fcrt'
+
+# Directory operations
+alias md='mkdir -p'
+alias rd='rmdir'
+
+# File operations
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+
+# Git aliases
+alias g='git'
+alias ga='git add'
+alias gaa='git add --all'
+alias gapa='git add --patch'
+alias gb='git branch'
+alias gba='git branch -a'
+alias gbd='git branch -d'
+alias gc='git commit -v'
+alias gc!='git commit -v --amend'
+alias gca='git commit -v -a'
+alias gca!='git commit -v -a --amend'
+alias gcam='git commit -a -m'
+alias gcb='git checkout -b'
+alias gcd='git checkout develop'
+alias gcm='git checkout main'
+alias gco='git checkout'
+alias gcp='git cherry-pick'
+alias gd='git diff'
+alias gdca='git diff --cached'
+alias gl='git pull'
+alias glog='git log --oneline --decorate --graph'
+alias glol='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset" --abbrev-commit'
+alias glola='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset" --abbrev-commit --all'
+alias gp='git push'
+alias gpd='git push --dry-run'
+alias gpoat='git push origin --all && git push origin --tags'
+alias gr='git remote'
+alias gra='git remote add'
+alias grb='git rebase'
+alias grba='git rebase --abort'
+alias grbc='git rebase --continue'
+alias grbi='git rebase -i'
+alias grh='git reset HEAD'
+alias grhh='git reset HEAD --hard'
+alias grmv='git remote rename'
+alias grrm='git remote remove'
+alias grset='git remote set-url'
+alias grt='cd $(git rev-parse --show-toplevel || echo ".")'
+alias gru='git reset --'
+alias grup='git remote update'
+alias grv='git remote -v'
+alias gs='git status'
+alias gss='git status -s'
+alias gst='git stash'
+alias gsta='git stash apply'
+alias gstd='git stash drop'
+alias gstl='git stash list'
+alias gstp='git stash pop'
+alias gsts='git stash show --text'
+alias gsu='git submodule update'
+alias gsw='git switch'
+alias gts='git tag -s'
+
+# Docker aliases
+alias d='docker'
+alias dc='docker-compose'
+alias dcu='docker-compose up'
+alias dcd='docker-compose down'
+alias dcr='docker-compose run'
+alias dce='docker-compose exec'
+alias dcl='docker-compose logs'
+
+# Database shortcuts
 alias m="mysql -u root -p"
+
+# PHP/Laravel shortcuts
 alias pa="php artisan"
-alias vi="vim"
-alias y="yarn"
+
+# Node.js/NPM aliases
+alias ni='npm install'
+alias nid='npm install --save-dev'
+alias nig='npm install --global'
+alias nis='npm install --save'
+alias nit='npm install --save-dev --save-exact'
+alias nr='npm run'
+alias ns='npm start'
+alias nt='npm test'
+alias nf='npm cache clean --force'
+
+# Yarn aliases
+alias y='yarn'
+alias ya='yarn add'
+alias yad='yarn add --dev'
+alias yb='yarn build'
+alias yd='yarn dev'
+alias yf='yarn format'
+alias yi='yarn install'
+alias yl='yarn lint'
+alias yr='yarn run'
 alias yrw="yarn run watch"
 alias yrp="yarn run prod"
+alias ys='yarn start'
+alias yt='yarn test'
+alias yu='yarn upgrade'
+
+# pnpm aliases
+alias p='pnpm'
+alias pa='pnpm add'
+alias pad='pnpm add --save-dev'
+alias pb='pnpm build'
+alias pd='pnpm dev'
+alias pf='pnpm format'
+alias pi='pnpm install'
+alias pl='pnpm lint'
+alias pr='pnpm run'
+alias ps='pnpm start'
+alias pt='pnpm test'
+alias pu='pnpm update'
+
+# Python aliases
+alias py='python'
+alias py3='python3'
+alias pip3='python3 -m pip'
+
+# System monitoring
+alias top='htop'
+alias df='df -h'
+alias du='du -h'
+alias free='free -h'
+
+# Network
+alias ping='ping -c 5'
+alias ports='netstat -tulanp'
+
+# macOS specific
+if [[ "$OSTYPE" == darwin* ]]; then
+  alias flushdns='sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder'
+  alias lscleanup='/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder'
+  alias showfiles='defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder'
+  alias hidefiles='defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder'
+  alias showdesktop='defaults write com.apple.finder CreateDesktop -bool true && killall Finder'
+  alias hidedesktop='defaults write com.apple.finder CreateDesktop -bool false && killall Finder'
+fi
+
+# Utility aliases
+alias h='history'
+alias j='jobs -l'
+alias which='type -a'
+alias path='echo -e ${PATH//:/\\n}'
+alias now='date +"%T"'
+alias nowtime=now
+alias nowdate='date +"%d-%m-%Y"'
+
+# Fun stuff
+alias weather='curl wttr.in'
+alias myip='curl http://ipecho.net/plain; echo'
+
+# Editor aliases
+alias v='nvim'
+alias vi="nvim"
+alias vim='nvim'
+alias e='$EDITOR'
+
+# Quick config edits
+alias zshconfig='$EDITOR ~/.zshrc'
+alias aliasconfig='$EDITOR ~/.aliases'
+
+# Safety aliases
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+
+# Make commands more verbose
+alias mkdir='mkdir -v'
+alias rmdir='rmdir -v'
+
+# Reload shell
+alias reload='source ~/.zshrc'
+
+# Modern replacements (if available)
+if command -v exa >/dev/null 2>&1; then
+  alias ls='exa'
+  alias ll='exa -l'
+  alias la='exa -la'
+  alias tree='exa --tree'
+fi
+
+if command -v bat >/dev/null 2>&1; then
+  alias cat='bat'
+fi
+
+if command -v rg >/dev/null 2>&1; then
+  alias grep='rg'
+fi
+
+# fzf shortcuts
+if command -v fzf >/dev/null 2>&1; then
+  alias fzp='fzf --preview "head -100 {}"'
+fi
+
+# Local aliases (machine-specific)
+if [[ -f ~/.aliases.local ]]; then
+  source ~/.aliases.local
+fi

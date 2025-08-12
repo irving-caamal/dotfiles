@@ -1,114 +1,203 @@
-<file name=0 path=install.sh>#!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-# 1. Xcode command-line tools
-if ! xcode-select -p &>/dev/null; then
-  xcode-select --install
-fi
+REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$REPO_DIR"
 
-# 2. Homebrew & env
-if ! command -v brew &>/dev/null; then
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-fi
-eval "$(brew shellenv)"
-brew update
-
-# 3. Install CLI apps
-brew install $(cat brew/apps.txt)
-
-# 4. Install GUI casks
-brew install --cask $(cat brew/casks.txt)
-
-# 5. Nerd Font (Hack) for Powerlevel10k icons
-brew install --cask font-hack-nerd-font
-
-# 6. macOS defaults
-sh "$(pwd)/macos/defaults.sh"
-
-# 7. Oh My Zsh
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-fi
-
-# 8. Symlink Zsh config & aliases
-ln -sf "$(pwd)/shell/.zshrc"  "$HOME/.zshrc"
-ln -sf "$(pwd)/shell/.aliases" "$HOME/.aliases"
-
-# 9. Zsh plugins & theme
-ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
-
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git \
-  "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" 2>/dev/null || true
-
-git clone https://github.com/zsh-users/zsh-autosuggestions.git \
-  "$ZSH_CUSTOM/plugins/zsh-autosuggestions" 2>/dev/null || true
-
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
-  "$ZSH_CUSTOM/themes/powerlevel10k" 2>/dev/null || true
-
-# 10. fzf keybindings & completion
-"$(brew --prefix)"/opt/fzf/install --key-bindings --completion --no-bash --no-fish
-
-# 11. asdf (Node & pnpm only; NO nvm)
-brew install asdf
-eval "$(brew shellenv)"
-
-# Source asdf (Homebrew first, fallback to ~/.asdf)
-if [ -f "$(brew --prefix asdf)/libexec/asdf.sh" ]; then
-  . "$(brew --prefix asdf)/libexec/asdf.sh"
-elif [ -f "$HOME/.asdf/asdf.sh" ]; then
-  . "$HOME/.asdf/asdf.sh"
+# Source configuration
+if [[ -f "$REPO_DIR/config.sh" ]]; then
+  source "$REPO_DIR/config.sh"
 else
-  echo "❌  asdf not found; aborting."
-  exit 1
+  echo "⚠️  Warning: config.sh not found. Using default values."
+  LOG_FILE="$HOME/.dotfiles-install.log"
+  BACKUP_DIR="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
+  BACKUP_EXISTING_CONFIGS=true
+  log_info() { echo "[INFO] $*"; }
+  log_warn() { echo "[WARN] $*"; }
+  log_error() { echo "[ERROR] $*"; }
+  log_success() { echo "[SUCCESS] $*"; }
 fi
 
-# ─ Node.js via asdf
-asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git 2>/dev/null || true
-IMPORT_SCRIPT="$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring"
-[ -x "$IMPORT_SCRIPT" ] && bash "$IMPORT_SCRIPT" || echo "⚠️  Skipping GPG import"
-asdf install nodejs lts || true
-asdf global nodejs lts 2>/dev/null || echo "⚠️  Could not set global Node.js"
+log_info "Starting dotfiles installation..."
+log_info "Repository directory: $REPO_DIR"
+log_info "Log file: $LOG_FILE"
 
-# ─ pnpm via asdf
-asdf plugin-add pnpm https://github.com/jonathanmorley/asdf-pnpm.git 2>/dev/null || true
-asdf install pnpm latest || true
-asdf global pnpm latest 2>/dev/null || echo "⚠️  Could not set global pnpm"
-
-# 12. Global JS tools
-pnpm install -g commitizen typescript eslint prettier || true
-
-# 13. SSH: multiple GitHub keys (irveloper & irvv17)
-sh "$(pwd)/ssh/setup-multi-github.sh"
-
-echo "✔️  Done!"
-</file>
-
-<file name=setup-multi-github.sh path=ssh>#!/usr/bin/env bash
-set -euo pipefail
-
-# 13. SSH: multiple GitHub keys (irveloper & irvv17)
-SSH_CONFIG="$HOME/.ssh/config"
-
-if ! grep -q "Host github.com-irveloper" "$SSH_CONFIG" 2>/dev/null; then
-  cat >> "$SSH_CONFIG" <<EOF
-
-Host github.com-irveloper
-  HostName github.com
-  User git
-  IdentityFile ~/.ssh/id_ed25519_irveloper
-  IdentitiesOnly yes
-EOF
+# 0) Create backup directory if needed
+if [[ "$BACKUP_EXISTING_CONFIGS" == true ]]; then
+  mkdir -p "$BACKUP_DIR"
+  log_info "Created backup directory: $BACKUP_DIR"
 fi
 
-if ! grep -q "Host github.com-irvv17" "$SSH_CONFIG" 2>/dev/null; then
-  cat >> "$SSH_CONFIG" <<EOF
-
-Host github.com-irvv17
-  HostName github.com
-  User git
-  IdentityFile ~/.ssh/id_ed25519_irvv17
-  IdentitiesOnly yes
-EOF
+# 1) Ensure Xcode CLT on macOS (no-op elsewhere)
+log_info "Checking for Xcode Command Line Tools..."
+if [[ "${OSTYPE:-}" == darwin* ]]; then
+  if ! xcode-select -p >/dev/null 2>&1; then
+    log_warn "Xcode Command Line Tools not found. Installing..."
+    xcode-select --install || log_warn "Failed to install Xcode CLT. Please install manually."
+  else
+    log_success "Xcode Command Line Tools already installed"
+  fi
 fi
-</file>
+
+# 2) Homebrew (macOS only)
+log_info "Setting up Homebrew..."
+if [[ "${OSTYPE:-}" == darwin* ]]; then
+  if ! command -v brew >/dev/null 2>&1; then
+    log_info "Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || {
+      log_error "Failed to install Homebrew"
+      exit 1
+    }
+    eval "$((/opt/homebrew/bin/brew shellenv) 2>/dev/null || (/usr/local/bin/brew shellenv))"
+    log_success "Homebrew installed successfully"
+  else
+    log_info "Homebrew found. Updating..."
+    brew update || log_warn "Failed to update Homebrew"
+  fi
+
+  # Install CLI apps
+  if [[ -f "$REPO_DIR/brew/apps.txt" ]]; then
+    log_info "Installing CLI applications from brew/apps.txt..."
+    while IFS= read -r app; do
+      [[ "$app" =~ ^[[:space:]]*# ]] && continue  # Skip comments
+      [[ -z "$app" ]] && continue  # Skip empty lines
+      app=$(echo "$app" | xargs)  # Trim whitespace
+      if brew list "$app" &>/dev/null; then
+        log_info "✓ $app already installed"
+      else
+        log_info "Installing $app..."
+        brew install "$app" || log_warn "Failed to install $app"
+      fi
+    done < "$REPO_DIR/brew/apps.txt"
+  fi
+
+  # Install casks
+  if [[ -f "$REPO_DIR/brew/casks.txt" && "$SKIP_BREW_CASKS" != true ]]; then
+    log_info "Installing GUI applications from brew/casks.txt..."
+    while IFS= read -r cask; do
+      [[ "$cask" =~ ^[[:space:]]*# ]] && continue  # Skip comments
+      [[ -z "$cask" ]] && continue  # Skip empty lines
+      cask=$(echo "$cask" | xargs)  # Trim whitespace
+      if brew list --cask "$cask" &>/dev/null; then
+        log_info "✓ $cask already installed"
+      else
+        log_info "Installing $cask..."
+        brew install --cask "$cask" || log_warn "Failed to install $cask"
+      fi
+    done < "$REPO_DIR/brew/casks.txt"
+  elif [[ "$SKIP_BREW_CASKS" == true ]]; then
+    log_info "Skipping GUI applications (SKIP_BREW_CASKS=true)"
+  fi
+else
+  log_warn "Skipping Homebrew setup (not on macOS)"
+fi
+
+# 3) asdf setup (optional; safe if not installed)
+if [[ "$SKIP_ASDF_SETUP" != true ]]; then
+  log_info "Setting up asdf version manager..."
+  if command -v asdf >/dev/null 2>&1; then
+    log_info "Adding Node.js plugin to asdf..."
+    asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git 2>/dev/null || log_info "Node.js plugin already exists"
+    
+    if [[ -f "$REPO_DIR/asdf/.tool-versions" ]]; then
+      if [[ "$BACKUP_EXISTING_CONFIGS" == true && -f "$HOME/.tool-versions" ]]; then
+        cp "$HOME/.tool-versions" "$BACKUP_DIR/.tool-versions.backup"
+        log_info "Backed up existing .tool-versions"
+      fi
+      cp "$REPO_DIR/asdf/.tool-versions" "$HOME/.tool-versions"
+      log_info "Copied .tool-versions to home directory"
+      log_info "Installing tools from .tool-versions..."
+      asdf install || log_warn "Some tools failed to install"
+      log_success "asdf setup completed"
+    else
+      log_warn "No .tool-versions file found in asdf/"
+    fi
+  else
+    log_warn "asdf not found. Install via Homebrew first: brew install asdf"
+  fi
+else
+  log_info "Skipping asdf setup (SKIP_ASDF_SETUP=true)"
+fi
+
+# 4) Shell dotfiles (symlink)
+log_info "Setting up shell configuration..."
+mkdir -p "$HOME"
+
+# Backup and symlink .zshrc
+if [[ -f "$HOME/.zshrc" && ! -L "$HOME/.zshrc" && "$BACKUP_EXISTING_CONFIGS" == true ]]; then
+  cp "$HOME/.zshrc" "$BACKUP_DIR/.zshrc.backup"
+  log_info "Backed up existing .zshrc"
+fi
+if [[ -f "$REPO_DIR/shell/.zshrc" ]]; then
+  ln -sf "$REPO_DIR/shell/.zshrc" "$HOME/.zshrc"
+  log_success "Linked .zshrc"
+else
+  log_warn "No .zshrc found in shell/ directory"
+fi
+
+# Backup and symlink .aliases
+if [[ -f "$HOME/.aliases" && ! -L "$HOME/.aliases" && "$BACKUP_EXISTING_CONFIGS" == true ]]; then
+  cp "$HOME/.aliases" "$BACKUP_DIR/.aliases.backup"
+  log_info "Backed up existing .aliases"
+fi
+if [[ -f "$REPO_DIR/shell/.aliases" ]]; then
+  ln -sf "$REPO_DIR/shell/.aliases" "$HOME/.aliases"
+  log_success "Linked .aliases"
+else
+  log_warn "No .aliases found in shell/ directory"
+fi
+
+# 5) Global JS tools (if package manager available)
+log_info "Installing global JavaScript packages..."
+if command -v pnpm >/dev/null 2>&1; then
+  log_info "Using pnpm to install global packages..."
+  for package in "${GLOBAL_NPM_PACKAGES[@]}"; do
+    log_info "Installing $package..."
+    pnpm install -g "$package" || log_warn "Failed to install $package"
+  done
+elif command -v npm >/dev/null 2>&1; then
+  log_info "Using npm to install global packages..."
+  for package in "${GLOBAL_NPM_PACKAGES[@]}"; do
+    log_info "Installing $package..."
+    npm install -g "$package" || log_warn "Failed to install $package"
+  done
+else
+  log_warn "No package manager (pnpm/npm) found. Skipping global packages."
+fi
+
+# 6) SSH multi-GitHub setup
+if [[ "$SKIP_SSH_SETUP" != true ]]; then
+  log_info "Setting up SSH keys for GitHub..."
+  if [[ -f "$REPO_DIR/ssh/setup-multi-github.sh" ]]; then
+    bash "$REPO_DIR/ssh/setup-multi-github.sh" || log_warn "SSH setup encountered issues"
+  else
+    log_warn "SSH setup script not found at ssh/setup-multi-github.sh"
+  fi
+else
+  log_info "Skipping SSH setup (SKIP_SSH_SETUP=true)"
+fi
+
+# 7) macOS defaults (optional)
+if [[ "$SKIP_MACOS_DEFAULTS" != true && "${OSTYPE:-}" == darwin* ]]; then
+  log_info "Applying macOS system preferences..."
+  if [[ -f "$REPO_DIR/macos/defaults.sh" ]]; then
+    bash "$REPO_DIR/macos/defaults.sh" || log_warn "Some macOS defaults failed to apply"
+    log_success "macOS defaults applied"
+  else
+    log_warn "macOS defaults script not found at macos/defaults.sh"
+  fi
+else
+  if [[ "$SKIP_MACOS_DEFAULTS" == true ]]; then
+    log_info "Skipping macOS defaults (SKIP_MACOS_DEFAULTS=true)"
+  else
+    log_info "Skipping macOS defaults (not on macOS)"
+  fi
+fi
+
+log_success "Dotfiles installation completed!"
+log_info "Log file saved to: $LOG_FILE"
+if [[ "$BACKUP_EXISTING_CONFIGS" == true ]]; then
+  log_info "Backups saved to: $BACKUP_DIR"
+fi
+echo ""
+echo "✔️  Done! Restart your terminal to load shell changes."
