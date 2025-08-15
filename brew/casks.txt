@@ -21,3 +21,4 @@ firefox@developer-edition
 chatgpt
 cursor
 windsurf
+discord

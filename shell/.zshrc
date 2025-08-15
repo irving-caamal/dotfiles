@@ -76,25 +76,25 @@ fi
 git_prompt_info() {
   if git rev-parse --git-dir > /dev/null 2>&1; then
     local branch=$(git branch --show-current 2>/dev/null)
-    local status=""
+    local git_status=""
     
     # Check for changes
     if ! git diff --quiet 2>/dev/null; then
-      status+="*"
+      git_status+="*"
     fi
     
     # Check for staged changes
     if ! git diff --cached --quiet 2>/dev/null; then
-      status+="+"
+      git_status+="+"
     fi
     
     # Check for untracked files
     if [[ -n $(git ls-files --others --exclude-standard 2>/dev/null) ]]; then
-      status+="?"
+      git_status+="?"
     fi
     
-    if [[ -n $status ]]; then
-      echo " (%{$fg[yellow]%}${branch}${status}%{$reset_color%})"
+    if [[ -n $git_status ]]; then
+      echo " (%{$fg[yellow]%}${branch}${git_status}%{$reset_color%})"
     else
       echo " (%{$fg[green]%}${branch}%{$reset_color%})"
     fi
