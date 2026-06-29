@@ -94,7 +94,7 @@ alias dcl='docker-compose logs'
 alias m="mysql -u root -p"
 
 # PHP/Laravel shortcuts
-alias pa="php artisan"
+alias art="php artisan"
 
 # Node.js/NPM aliases
 alias ni='npm install'

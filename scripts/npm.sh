@@ -5,6 +5,10 @@ REPO_DIR="${REPO_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 source "$REPO_DIR/config.sh"
 
 log_info "Installing global JavaScript packages..."
+
+# asdf shims may not be in PATH in a fresh subprocess — add explicitly
+export PATH="$HOME/.asdf/shims:$PATH"
+
 if command -v pnpm >/dev/null 2>&1; then
   log_info "Using pnpm to install global packages..."
   for package in "${GLOBAL_NPM_PACKAGES[@]}"; do
