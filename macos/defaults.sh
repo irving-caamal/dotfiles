@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 # Show hidden files in Finder
 defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder
 # Faster key repeat

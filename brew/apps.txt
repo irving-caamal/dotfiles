@@ -12,3 +12,8 @@ tree
 mas
 watchman
 fd
+
+# Warp-like zsh plugins
+zsh-autosuggestions
+zsh-syntax-highlighting
+zsh-history-substring-search
