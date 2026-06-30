@@ -12,6 +12,10 @@ tree
 mas
 watchman
 fd
+bat
+ripgrep
+eza
+lazygit
 
 # Warp-like zsh plugins
 zsh-autosuggestions

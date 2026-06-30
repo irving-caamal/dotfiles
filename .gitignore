@@ -1,3 +1,28 @@
 node_modules/
 .DS_Store
 .idea/
+
+# Secrets — never commit these
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.crt
+
+# SSH private keys (public .pub files are fine)
+id_rsa
+id_ed25519
+id_ecdsa
+id_dsa
+
+# Sensitive local overrides
+.zshrc.local
+.aliases.local
+
+# macOS
+__MACOSX/
+.Spotlight-V100
+.Trashes
