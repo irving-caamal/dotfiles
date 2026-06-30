@@ -1,0 +1,57 @@
+[user]
+	name = Irving Caamal
+	email = irveloper@gmail.com
+
+[core]
+	pager = delta
+	editor = nvim
+	autocrlf = input
+	excludesfile = ~/.gitignore_global
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true
+	side-by-side = true
+	line-numbers = true
+	syntax-theme = Dracula
+
+[merge]
+	conflictstyle = diff3
+
+[diff]
+	colorMoved = default
+
+[pull]
+	rebase = true
+
+[push]
+	autoSetupRemote = true
+
+[init]
+	defaultBranch = main
+
+[rebase]
+	autosquash = true
+	autostash = true
+
+[fetch]
+	prune = true
+
+[branch]
+	sort = -committerdate
+
+[alias]
+	undo = reset HEAD~1 --mixed
+	aliases = config --get-regexp alias
+	lg = log --oneline --decorate --graph --all
+
+[filter "lfs"]
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+
+[include]
+	path = ~/.gitconfig.local

@@ -9,7 +9,7 @@ Automated macOS developer setup. One command installs everything — Homebrew, C
 | Category | Tools |
 |---|---|
 | Shell | zsh-autosuggestions, zsh-syntax-highlighting, zsh-history-substring-search, fzf-tab |
-| CLI | git, neovim, fzf, tmux, asdf, gh, zoxide, delta, fd, tree, watchman, mas |
+| CLI | git, neovim, fzf, tmux, asdf, gh, zoxide, delta, fd, tree, bat, eza, ripgrep, lazygit, watchman, mas |
 | Node.js | asdf-managed Node 20, global: commitizen, typescript, eslint, prettier |
 | GUI apps | iTerm2, Raycast, VSCode, Cursor, Windsurf, 1Password, Docker, TablePlus, Figma, Warp, and more |
 | Config | Karabiner Hyper Key (57 shortcuts), SSH multi-account (2 GitHub identities), macOS defaults |
@@ -324,6 +324,9 @@ dotfiles/
 ├── shell/
 │   ├── .zshrc                   # Zsh config
 │   └── .aliases                 # All aliases
+├── git/
+│   ├── .gitconfig               # Git config with delta, sensible defaults
+│   └── .gitignore_global        # Global gitignore (applied to all repos)
 ├── asdf/
 │   └── .tool-versions           # Runtime versions
 ├── karabiner/
