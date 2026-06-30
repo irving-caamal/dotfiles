@@ -45,6 +45,14 @@ STEPS=(
 for step in "${STEPS[@]}"; do
   if [[ -f "$REPO_DIR/$step" ]]; then
     bash "$REPO_DIR/$step"
+    # After brew installs tools, refresh PATH so subsequent scripts find them
+    if [[ "$step" == "scripts/brew.sh" ]]; then
+      if [[ -f /opt/homebrew/bin/brew ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      elif [[ -f /usr/local/bin/brew ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+      fi
+    fi
   else
     log_warn "Script not found: $step"
   fi

@@ -10,8 +10,16 @@ if [[ "$SKIP_ASDF_SETUP" == true ]]; then
 fi
 
 log_info "Setting up asdf version manager..."
+
+# Homebrew may have just been installed — ensure its bin is in PATH
+if [[ -f /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -f /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
 if ! command -v asdf >/dev/null 2>&1; then
-  log_warn "asdf not found. Install via Homebrew first: brew install asdf"
+  log_warn "asdf not found even after Homebrew PATH setup. Make sure brew.sh ran first."
   exit 0
 fi
 
