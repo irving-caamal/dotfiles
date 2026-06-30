@@ -55,4 +55,4 @@ log_success() { echo -e "${GREEN}[SUCCESS]${NC} $*" | tee -a "$LOG_FILE"; }
 
 # Initialize log file
 mkdir -p "$(dirname "$LOG_FILE")"
-echo "# Dotfiles installation log - $(date)" > "$LOG_FILE"
+echo "# Dotfiles installation log - $(date)" >> "$LOG_FILE"

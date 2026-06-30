@@ -35,7 +35,33 @@ git clone https://github.com/irveloper/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
 
-### 3. Run the installer
+### 3. Edit `config.sh` with your info
+
+> **Do this before running the installer.** The defaults point to the original author's accounts.
+
+```bash
+# Open with any editor, e.g.:
+nano ~/dotfiles/config.sh
+# or: open -e ~/dotfiles/config.sh
+```
+
+Change these values:
+
+```bash
+GITHUB_EMAIL_PRIMARY="you@gmail.com"         # your primary GitHub email
+GITHUB_EMAIL_SECONDARY="you-work@company.com" # your secondary GitHub email (or same as primary)
+GITHUB_HOST_PRIMARY="github-personal"         # SSH alias for primary account
+GITHUB_HOST_SECONDARY="github-work"          # SSH alias for secondary account
+
+# Skip flags — set to true to skip steps you don't need
+SKIP_BREW_CASKS=false      # true = skip GUI app installs (faster for minimal setup)
+SKIP_SSH_SETUP=false       # true = skip SSH key generation
+SKIP_MACOS_DEFAULTS=false  # true = skip system preferences
+```
+
+If you only have one GitHub account, set both email and host values to the same thing and set `SKIP_SSH_SETUP=true`.
+
+### 4. Run the installer
 
 ```bash
 chmod +x install.sh
@@ -60,7 +86,7 @@ The installer runs these steps in order:
 
 Backups of any existing configs are saved to `~/.dotfiles-backup-<timestamp>/`.
 
-### 4. Add SSH keys to GitHub
+### 5. Add SSH keys to GitHub
 
 After the installer finishes, it prints your public keys. Add them to GitHub:
 
@@ -83,11 +109,11 @@ ssh -T git@github-irvv17
 # Expected: "Hi <username>! You've successfully authenticated..."
 ```
 
-### 5. Restart terminal
+### 6. Restart terminal
 
 Close and reopen Terminal (or open iTerm2/Warp). All shell changes load on a fresh session.
 
-### 6. Verify
+### 7. Verify
 
 ```bash
 git --version
@@ -218,23 +244,6 @@ warp [dir]          # open Warp terminal at path
 
 ## Customization
 
-### Before first install — edit `config.sh`
-
-```bash
-# Your GitHub emails
-GITHUB_EMAIL_PRIMARY="you@gmail.com"
-GITHUB_EMAIL_SECONDARY="you-work@company.com"
-
-# SSH host aliases (used in git remote URLs)
-GITHUB_HOST_PRIMARY="github-personal"
-GITHUB_HOST_SECONDARY="github-work"
-
-# Skip flags
-SKIP_BREW_CASKS=false       # true = skip GUI app installs
-SKIP_SSH_SETUP=false        # true = skip SSH key generation
-SKIP_MACOS_DEFAULTS=false   # true = skip system preferences
-```
-
 ### Machine-specific config (not tracked by git)
 
 Create `~/.zshrc.local` for secrets, work paths, or machine-only env vars. It loads automatically at the end of `.zshrc`:
@@ -359,6 +368,17 @@ Homebrew on Apple Silicon installs to `/opt/homebrew`. Run:
 eval "$(/opt/homebrew/bin/brew shellenv)"
 ```
 This is already in `.zshrc`, so a terminal restart fixes it permanently.
+
+**`asdf not found` or Node not installed after running install.sh**
+This happens when Homebrew was just installed and its bin wasn't in PATH for the asdf step. Re-run just the asdf script:
+```bash
+eval "$(/opt/homebrew/bin/brew shellenv)"
+bash scripts/asdf.sh
+```
+Or simply re-run the full installer — all steps are idempotent:
+```bash
+./install.sh
+```
 
 **`command not found: node` after install**
 asdf shims are loaded via `.zshrc`. Restart terminal or run:
